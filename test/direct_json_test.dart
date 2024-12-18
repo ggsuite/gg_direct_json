@@ -11,7 +11,6 @@ import 'package:path/path.dart';
 import 'package:test/test.dart';
 
 void main() {
-  const directJson = DirectJson();
   final messages = <String>[];
   late File file;
 
@@ -22,12 +21,33 @@ void main() {
   });
 
   group('DirectJson()', () {
+    test('set, get', () {
+      final df = DirectJson(
+        json: {
+          'a': 1,
+          'b': {'c': 3},
+        },
+        prettyPrint: false,
+      );
+
+      df.set('/b/c', 4);
+      expect(df.jsonString, '{"a":1,"b":{"c":4}}');
+
+      df.set('b.c', 5);
+      expect(df.jsonString, '{"a":1,"b":{"c":5}}');
+
+      final val = df.get<int>('b/c');
+      expect(val, 5);
+
+      final val2 = df.get<Map<String, dynamic>>('b');
+      expect(val2, {'c': 5});
+    });
     group('write:', () {
       group('write(json, path, value)', () {
         group('writes the value into json', () {
           test('- with an empty json', () {
             final json = <String, dynamic>{};
-            DirectJson.write(json: json, path: ['a', 'b'], value: 1);
+            DirectJson(json: json).write(path: ['a', 'b'], value: 1);
             expect(json, {
               'a': {'b': 1},
             });
@@ -37,7 +57,7 @@ void main() {
             final json = <String, dynamic>{
               'a': {'b': 1},
             };
-            DirectJson.write(json: json, path: ['a', 'c'], value: 2);
+            DirectJson(json: json).write(path: ['a', 'c'], value: 2);
             expect(json, {
               'a': {'b': 1, 'c': 2},
             });
@@ -50,7 +70,7 @@ void main() {
               'a': {'b': 1},
             };
             expect(
-              () => DirectJson.write(json: json, path: ['a', 'b'], value: '2'),
+              () => DirectJson(json: json).write(path: ['a', 'b'], value: '2'),
               throwsA(
                 isA<Exception>().having(
                   (e) => e.toString(),
@@ -63,32 +83,32 @@ void main() {
         });
       });
 
-      group('writeString(json, path, value)', () {
+      group('writeToString(json, path, value)', () {
         group('writes the value into json', () {
           test('- with an empty json', () {
             const json = '{}';
             final result =
-                DirectJson.writeString(json: json, path: 'a/b', value: 1);
+                DirectJson.writeToString(json: json, path: 'a/b', value: 1);
             expect(result, '{"a":{"b":1}}');
           });
 
           test('- with an empty string', () {
             const json = '';
             final result =
-                DirectJson.writeString(json: json, path: 'a/b', value: 1);
+                DirectJson.writeToString(json: json, path: 'a/b', value: 1);
             expect(result, '{"a":{"b":1}}');
           });
 
           test('- with an existing value', () {
             const json = '{"a":{"b":1}}';
             final result =
-                DirectJson.writeString(json: json, path: 'a/c', value: 2);
+                DirectJson.writeToString(json: json, path: 'a/c', value: 2);
             expect(result, '{"a":{"b":1,"c":2}}');
           });
 
           test('- with prettyPrint', () {
             const json = '{"a":{"b":1}}';
-            final result = DirectJson.writeString(
+            final result = DirectJson.writeToString(
               json: json,
               path: 'a/c',
               value: 2,
@@ -103,7 +123,8 @@ void main() {
           test('- when an existing value is not of type T', () {
             const json = '{"a":{"b":1}}';
             expect(
-              () => DirectJson.writeString(json: json, path: 'a/b', value: '2'),
+              () =>
+                  DirectJson.writeToString(json: json, path: 'a/b', value: '2'),
               throwsA(
                 isA<Exception>().having(
                   (e) => e.toString(),
@@ -156,8 +177,8 @@ void main() {
             final json = <String, dynamic>{
               'a': {'b': 1},
             };
+            final directJson = DirectJson(json: json);
             final result = directJson.read<int>(
-              json: json,
               path: ['a', 'b'],
             );
             expect(result, 1);
@@ -167,8 +188,8 @@ void main() {
             final json = <String, dynamic>{
               'a': {'b': 1},
             };
+            final directJson = DirectJson(json: json);
             final result = directJson.read<int>(
-              json: json,
               path: ['a', 'c'],
             );
             expect(result, isNull);
@@ -180,9 +201,9 @@ void main() {
             final json = <String, dynamic>{
               'a': {'b': 1},
             };
+            final directJson = DirectJson(json: json);
             expect(
               () => directJson.read<String>(
-                json: json,
                 path: ['a', 'b'],
               ),
               throwsA(
@@ -273,7 +294,8 @@ void main() {
             final json = <String, dynamic>{
               'a': {'b': 1},
             };
-            directJson.remove(json: json, path: ['a', 'b']);
+            final directJson = DirectJson(json: json);
+            directJson.remove(path: ['a', 'b']);
             expect(json, {
               'a': <String, dynamic>{},
             });
@@ -283,7 +305,8 @@ void main() {
             final json = <String, dynamic>{
               'a': {'b': 1},
             };
-            directJson.remove(json: json, path: ['a', 'c']);
+            final directJson = DirectJson(json: json);
+            directJson.remove(path: ['a', 'c']);
             expect(json, {
               'a': {'b': 1},
             });
@@ -295,14 +318,15 @@ void main() {
         group('removes the value from the file', () {
           test('- with an existing value', () async {
             await file.writeAsString('{"a":{"b":1}}');
-            await directJson.removeFromFile(file: file, path: 'a/b');
+
+            await DirectJson.removeFromFile(file: file, path: 'a/b');
             final result = file.readAsStringSync();
             expect(result, '{"a":{}}');
           });
 
           test('- with a non-existing value', () async {
             await file.writeAsString('{"a":{"b":1}}');
-            await directJson.removeFromFile(file: file, path: 'a/c');
+            await DirectJson.removeFromFile(file: file, path: 'a/c');
             final result = file.readAsStringSync();
             expect(result, '{"a":{"b":1}}');
           });
@@ -313,7 +337,7 @@ void main() {
             final file = File('not_existing_file_3.json');
             expect(
               () async =>
-                  await directJson.removeFromFile(file: file, path: 'a/b'),
+                  await DirectJson.removeFromFile(file: file, path: 'a/b'),
               throwsA(isA<FileSystemException>()),
             );
           });

@@ -9,43 +9,63 @@ import 'dart:io';
 
 /// Easily read and write values directly to and from JSON documents.
 class DirectJson {
-  /// Constructor.
-  const DirectJson({this.prettyPrint = false});
+  /// Creates a new instance from a JSON document.
+  DirectJson({
+    this.json = const {},
+    this.prettyPrint = false,
+  });
+
+  /// Creates a new instance from a JSON string.
+  factory DirectJson.fromString({
+    required String json,
+    bool prettyPrint = false,
+  }) =>
+      DirectJson(
+        prettyPrint: prettyPrint,
+        json: json.isEmpty ? {} : jsonDecode(json) as Map<String, dynamic>,
+      );
+
+  /// The underlying JSON document.
+  final Map<String, dynamic> json;
+
+  /// The JSON document as a string.
+  String get jsonString => _encoder(prettyPrint).convert(json);
 
   // ######################
   // Write
   // ######################
 
   // ...........................................................................
+  /// Write a value into the json
+  void set<T>(String path, T value) =>
+      write(path: path.split(RegExp('[./]')), value: value);
+
+  // ...........................................................................
   /// Writes a value into a JSON document.
   ///
   /// - If the path does not exist, it will be created.
   /// - Throws when an existing value is not of type [T].
-  static void write<T>({
-    required Map<String, dynamic> json,
+  void write<T>({
     required Iterable<String> path,
     required T value,
   }) =>
       _write<T>(json, path, value);
 
-// ...........................................................................
+  // ...........................................................................
   /// Writes a value into a JSON document.
   ///
   /// - If the path does not exist, it will be created.
   /// - Throws when an existing value is not of type [T].
   /// - Returns the new JSON content.
-  static String writeString<T>({
+  static String writeToString<T>({
     required String json,
     required String path,
     required T value,
     bool prettyPrint = false,
   }) {
-    final Map<String, dynamic> jsonMap =
-        json.isEmpty ? {} : jsonDecode(json) as Map<String, dynamic>;
-
-    _write<T>(jsonMap, path.split('/'), value);
-    final result = _encoder(prettyPrint).convert(jsonMap);
-    return result;
+    final dj = DirectJson.fromString(json: json, prettyPrint: prettyPrint);
+    dj.write(path: path.split('/'), value: value);
+    return dj.jsonString;
   }
 
   // ...........................................................................
@@ -60,7 +80,7 @@ class DirectJson {
     required T value,
   }) async {
     final json = (await file.exists()) ? await file.readAsString() : '';
-    final result = writeString<T>(json: json, path: path, value: value);
+    final result = writeToString<T>(json: json, path: path, value: value);
     await file.writeAsString(result);
     return result;
   }
@@ -69,13 +89,15 @@ class DirectJson {
   // Read
   // ######################
 
+  /// Reads a value from the JSON document.
+  T? get<T>(String path) => read<T>(path: path.split(RegExp('[./]')));
+
   // ...........................................................................
   /// Reads a value from a JSON document.
   ///
   /// - Returns null if the value is not found.
   /// - Throws when value is not of type [T].
   T? read<T>({
-    required Map<String, dynamic> json,
     required Iterable<String> path,
   }) =>
       _read<T>(json, path);
@@ -119,7 +141,6 @@ class DirectJson {
   // ...........................................................................
   /// Removes a value from a JSON document.
   void remove({
-    required Map<String, dynamic> json,
     required Iterable<String> path,
   }) =>
       _remove(json, path);
@@ -140,7 +161,7 @@ class DirectJson {
 
   // ...........................................................................
   /// Removes a value from a JSON file.
-  Future<String> removeFromFile({
+  static Future<String> removeFromFile({
     required File file,
     required String path,
   }) async {
@@ -157,6 +178,7 @@ class DirectJson {
   // ######################
   // Private
   // ######################
+
   static JsonEncoder _encoder(bool prettyPrint) =>
       prettyPrint ? const JsonEncoder.withIndent('  ') : const JsonEncoder();
 
@@ -193,6 +215,9 @@ class DirectJson {
 
     for (int i = 0; i < path.length; i++) {
       var pathSegment = path.elementAt(i);
+      if (pathSegment.isEmpty) {
+        continue;
+      }
 
       if (i == path.length - 1) {
         node[pathSegment] = value;
