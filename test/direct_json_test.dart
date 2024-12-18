@@ -27,7 +27,7 @@ void main() {
         group('writes the value into json', () {
           test('- with an empty json', () {
             final json = <String, dynamic>{};
-            directJson.write(json: json, path: ['a', 'b'], value: 1);
+            DirectJson.write(json: json, path: ['a', 'b'], value: 1);
             expect(json, {
               'a': {'b': 1},
             });
@@ -37,7 +37,7 @@ void main() {
             final json = <String, dynamic>{
               'a': {'b': 1},
             };
-            directJson.write(json: json, path: ['a', 'c'], value: 2);
+            DirectJson.write(json: json, path: ['a', 'c'], value: 2);
             expect(json, {
               'a': {'b': 1, 'c': 2},
             });
@@ -50,7 +50,7 @@ void main() {
               'a': {'b': 1},
             };
             expect(
-              () => directJson.write(json: json, path: ['a', 'b'], value: '2'),
+              () => DirectJson.write(json: json, path: ['a', 'b'], value: '2'),
               throwsA(
                 isA<Exception>().having(
                   (e) => e.toString(),
@@ -68,29 +68,32 @@ void main() {
           test('- with an empty json', () {
             const json = '{}';
             final result =
-                directJson.writeString(json: json, path: 'a/b', value: 1);
+                DirectJson.writeString(json: json, path: 'a/b', value: 1);
             expect(result, '{"a":{"b":1}}');
           });
 
           test('- with an empty string', () {
             const json = '';
             final result =
-                directJson.writeString(json: json, path: 'a/b', value: 1);
+                DirectJson.writeString(json: json, path: 'a/b', value: 1);
             expect(result, '{"a":{"b":1}}');
           });
 
           test('- with an existing value', () {
             const json = '{"a":{"b":1}}';
             final result =
-                directJson.writeString(json: json, path: 'a/c', value: 2);
+                DirectJson.writeString(json: json, path: 'a/c', value: 2);
             expect(result, '{"a":{"b":1,"c":2}}');
           });
 
           test('- with prettyPrint', () {
             const json = '{"a":{"b":1}}';
-            const directJson = DirectJson(prettyPrint: true);
-            final result =
-                directJson.writeString(json: json, path: 'a/c', value: 2);
+            final result = DirectJson.writeString(
+              json: json,
+              path: 'a/c',
+              value: 2,
+              prettyPrint: true,
+            );
 
             expect(result, prettyPrintResult);
           });
@@ -100,7 +103,7 @@ void main() {
           test('- when an existing value is not of type T', () {
             const json = '{"a":{"b":1}}';
             expect(
-              () => directJson.writeString(json: json, path: 'a/b', value: '2'),
+              () => DirectJson.writeString(json: json, path: 'a/b', value: '2'),
               throwsA(
                 isA<Exception>().having(
                   (e) => e.toString(),
@@ -118,7 +121,7 @@ void main() {
           test('- with an empty file', () async {
             await file.writeAsString('');
             final result0 =
-                await directJson.writeFile(file: file, path: 'a/b', value: 1);
+                await DirectJson.writeFile(file: file, path: 'a/b', value: 1);
             final result1 = await file.readAsString();
             expect(result0, result1);
             expect(result1, '{"a":{"b":1}}');
@@ -126,7 +129,7 @@ void main() {
 
           test('- with an existing value', () async {
             await file.writeAsString('{"a":{"b":1}}');
-            await directJson.writeFile(file: file, path: 'a/b', value: 2);
+            await DirectJson.writeFile(file: file, path: 'a/b', value: 2);
             final result = file.readAsStringSync();
             expect(result, '{"a":{"b":2}}');
           });
@@ -136,7 +139,7 @@ void main() {
           test('- when the file is not existing', () async {
             final file = File('not_existing_file.json');
             final result =
-                await directJson.writeFile(file: file, path: 'a/b', value: 1);
+                await DirectJson.writeFile(file: file, path: 'a/b', value: 1);
 
             expect(await file.exists(), isTrue);
             expect(result, '{"a":{"b":1}}');
@@ -198,13 +201,13 @@ void main() {
         group('returns the value from json', () {
           test('- with an existing value', () {
             const json = '{"a":{"b":1}}';
-            final result = directJson.readString<int>(json: json, path: 'a/b');
+            final result = DirectJson.readString<int>(json: json, path: 'a/b');
             expect(result, 1);
           });
 
           test('- with a non-existing value', () {
             const json = '{"a":{"b":1}}';
-            final result = directJson.readString<int>(json: json, path: 'a/c');
+            final result = DirectJson.readString<int>(json: json, path: 'a/c');
             expect(result, null);
           });
         });
@@ -213,7 +216,7 @@ void main() {
           test('- when value is not of type T', () {
             const json = '{"a":{"b":1}}';
             expect(
-              () => directJson.readString<String>(json: json, path: 'a/b'),
+              () => DirectJson.readString<String>(json: json, path: 'a/b'),
               throwsA(
                 isA<Exception>().having(
                   (e) => e.toString(),
@@ -231,21 +234,21 @@ void main() {
           test('- with an existing value', () async {
             await file.writeAsString('{"a":{"b":1}}');
             final result =
-                await directJson.readFile<int>(file: file, path: 'a/b');
+                await DirectJson.readFile<int>(file: file, path: 'a/b');
             expect(result, 1);
           });
 
           test('- with a non-existing value', () async {
             await file.writeAsString('{"a":{"b":1}}');
             final result =
-                await directJson.readFile<int>(file: file, path: 'a/c');
+                await DirectJson.readFile<int>(file: file, path: 'a/c');
             expect(result, null);
           });
 
           test('- with an empty file', () async {
             await file.writeAsString('');
             final result =
-                await directJson.readFile<int>(file: file, path: 'a/c');
+                await DirectJson.readFile<int>(file: file, path: 'a/c');
             expect(result, null);
           });
         });
@@ -255,7 +258,7 @@ void main() {
             final file = File('not_existing_file_2.json');
             expect(
               () async =>
-                  await directJson.readFile<int>(file: file, path: 'a/b'),
+                  await DirectJson.readFile<int>(file: file, path: 'a/b'),
               throwsA(isA<FileSystemException>()),
             );
           });

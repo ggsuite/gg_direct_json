@@ -21,7 +21,7 @@ class DirectJson {
   ///
   /// - If the path does not exist, it will be created.
   /// - Throws when an existing value is not of type [T].
-  void write<T>({
+  static void write<T>({
     required Map<String, dynamic> json,
     required Iterable<String> path,
     required T value,
@@ -34,16 +34,17 @@ class DirectJson {
   /// - If the path does not exist, it will be created.
   /// - Throws when an existing value is not of type [T].
   /// - Returns the new JSON content.
-  String writeString<T>({
+  static String writeString<T>({
     required String json,
     required String path,
     required T value,
+    bool prettyPrint = false,
   }) {
     final Map<String, dynamic> jsonMap =
         json.isEmpty ? {} : jsonDecode(json) as Map<String, dynamic>;
 
     _write<T>(jsonMap, path.split('/'), value);
-    final result = _encoder.convert(jsonMap);
+    final result = _encoder(prettyPrint).convert(jsonMap);
     return result;
   }
 
@@ -53,7 +54,7 @@ class DirectJson {
   /// - If the path does not exist, it will be created.
   /// - Creates the file when not existing.
   /// - Returns the new JSON content.
-  Future<String> writeFile<T>({
+  static Future<String> writeFile<T>({
     required File file,
     required String path,
     required T value,
@@ -85,7 +86,7 @@ class DirectJson {
   /// - Returns null if the value is not found.
   /// - Throws when value is not of type [T].
   /// - Throws when the file does not exist.
-  Future<T?> readFile<T>({
+  static Future<T?> readFile<T>({
     required File file,
     required String path,
   }) async {
@@ -101,7 +102,7 @@ class DirectJson {
   ///
   /// - Returns null if the value is not found.
   /// - Throws when value is not of type [T].
-  T? readString<T>({
+  static T? readString<T>({
     required String json,
     required String path,
   }) {
@@ -125,15 +126,16 @@ class DirectJson {
 
   // ...........................................................................
   /// Removes a value from a JSON document.
-  String removeFromString({
+  static String removeFromString({
     required String json,
     required String path,
+    bool prettyPrint = false,
   }) {
     final Map<String, dynamic> jsonMap =
         jsonDecode(json) as Map<String, dynamic>;
 
     _remove(jsonMap, path.split('/'));
-    return _encoder.convert(jsonMap);
+    return _encoder(prettyPrint).convert(jsonMap);
   }
 
   // ...........................................................................
@@ -155,11 +157,11 @@ class DirectJson {
   // ######################
   // Private
   // ######################
-  JsonEncoder get _encoder =>
+  static JsonEncoder _encoder(bool prettyPrint) =>
       prettyPrint ? const JsonEncoder.withIndent('  ') : const JsonEncoder();
 
   // ...........................................................................
-  T? _read<T>(Map<String, dynamic> json, Iterable<String> path) {
+  static T? _read<T>(Map<String, dynamic> json, Iterable<String> path) {
     var node = json;
     for (var i = 0; i < path.length; i++) {
       final pathSegment = path.elementAt(i);
@@ -180,7 +182,7 @@ class DirectJson {
   }
 
   // ...........................................................................
-  void _write<T>(
+  static void _write<T>(
     Map<String, dynamic> json,
     Iterable<String> path,
     T value,
@@ -207,7 +209,7 @@ class DirectJson {
   }
 
   // ...........................................................................
-  void _remove(Map<String, dynamic> doc, Iterable<String> path) {
+  static void _remove(Map<String, dynamic> doc, Iterable<String> path) {
     var node = doc;
     for (int i = 0; i < path.length; i++) {
       final pathSegment = path.elementAt(i);
@@ -224,7 +226,7 @@ class DirectJson {
   }
 
   // ...........................................................................
-  void _checkType<T>(
+  static void _checkType<T>(
     Map<String, dynamic> json,
     Iterable<String> path,
   ) {
