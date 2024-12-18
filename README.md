@@ -1,6 +1,6 @@
 # gg_direct_json
 
-ChatGPT The `gg_direct_json` package is a versatile tool designed for ease of use when
+The `gg_direct_json` package is a versatile tool designed for ease of use when
 working with JSON files, allowing users to effortlessly write or read values.
 
 By simply providing a path formatted as `a/b/c/value`, the package automatically
