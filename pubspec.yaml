@@ -1,6 +1,6 @@
 name: gg_direct_json
 description: gg_direct_json allows easy JSON manipulation via a/b/c paths for read/write.
-version: 1.0.2
+version: 1.0.3
 repository: https://github.com/inlavigo/gg_direct_json.git
 
 environment:
