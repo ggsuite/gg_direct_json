@@ -43,8 +43,11 @@ Future<void> main() async {
   // ...........................................................................
   print('Directly update values in JSON strings');
 
-  final result =
-      DirectJson.writeToString(json: '{"a": 5, "b": 6}', path: '/b', value: 8);
+  final result = DirectJson.writeToString(
+    json: '{"a": 5, "b": 6}',
+    path: '/b',
+    value: 8,
+  );
 
   print(result); // {"a":5,"b":8}
 
@@ -54,11 +57,7 @@ Future<void> main() async {
   final path = join(Directory.systemTemp.path, 'direct_json.json');
   var file = await File(path).writeAsString('{"a": 5, "b": 6}');
 
-  await DirectJson.writeFile(
-    file: file,
-    path: '/b',
-    value: 7,
-  );
+  await DirectJson.writeFile(file: file, path: '/b', value: 7);
 
   final content = await file.readAsString();
   print(content); // {"a":5,"b":7}

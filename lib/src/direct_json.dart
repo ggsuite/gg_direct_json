@@ -10,21 +10,17 @@ import 'dart:io';
 /// Easily read and write values directly to and from JSON documents.
 class DirectJson {
   /// Creates a new instance from a JSON document.
-  DirectJson({
-    this.json = const {},
-    this.prettyPrint = false,
-  });
+  DirectJson({this.json = const {}, this.prettyPrint = false});
 
   /// Creates a new instance from a JSON string.
   factory DirectJson.fromString({
     required String json,
     bool prettyPrint = false,
     Pattern? exclude,
-  }) =>
-      DirectJson(
-        prettyPrint: prettyPrint,
-        json: json.isEmpty ? {} : jsonDecode(json) as Map<String, dynamic>,
-      );
+  }) => DirectJson(
+    prettyPrint: prettyPrint,
+    json: json.isEmpty ? {} : jsonDecode(json) as Map<String, dynamic>,
+  );
 
   /// The underlying JSON document.
   final Map<String, dynamic> json;
@@ -43,11 +39,7 @@ class DirectJson {
       ['/'],
     ];
     _ls(json, result, [''], writeValues: writeValues, exclude: exclude);
-    return result
-        .map(
-          (e) => e.join('/'),
-        )
-        .toList();
+    return result.map((e) => e.join('/')).toList();
   }
 
   // ######################
@@ -64,10 +56,7 @@ class DirectJson {
   ///
   /// - If the path does not exist, it will be created.
   /// - Throws when an existing value is not of type [T].
-  void write<T>({
-    required Iterable<String> path,
-    required T value,
-  }) =>
+  void write<T>({required Iterable<String> path, required T value}) =>
       _write<T>(json, path, value);
 
   // ...........................................................................
@@ -116,10 +105,7 @@ class DirectJson {
   ///
   /// - Returns null if the value is not found.
   /// - Throws when value is not of type [T].
-  T? read<T>({
-    required Iterable<String> path,
-  }) =>
-      _read<T>(json, path);
+  T? read<T>({required Iterable<String> path}) => _read<T>(json, path);
 
   // ...........................................................................
   /// Reads a value from a JSON file
@@ -143,10 +129,7 @@ class DirectJson {
   ///
   /// - Returns null if the value is not found.
   /// - Throws when value is not of type [T].
-  static T? readString<T>({
-    required String json,
-    required String path,
-  }) {
+  static T? readString<T>({required String json, required String path}) {
     final Map<String, dynamic> jsonMap =
         jsonDecode(json) as Map<String, dynamic>;
 
@@ -159,10 +142,7 @@ class DirectJson {
 
   // ...........................................................................
   /// Removes a value from a JSON document.
-  void remove({
-    required Iterable<String> path,
-  }) =>
-      _remove(json, path);
+  void remove({required Iterable<String> path}) => _remove(json, path);
 
   // ...........................................................................
   /// Removes a value from a JSON document.
@@ -270,10 +250,7 @@ class DirectJson {
   }
 
   // ...........................................................................
-  static void _checkType<T>(
-    Map<String, dynamic> json,
-    Iterable<String> path,
-  ) {
+  static void _checkType<T>(Map<String, dynamic> json, Iterable<String> path) {
     _read<T>(json, path); // Will throw if existing value has a different type.
   }
 
@@ -299,12 +276,10 @@ class DirectJson {
       if (val is Map<String, dynamic>) {
         _ls(val, paths, child, writeValues: writeValues, exclude: exclude);
       }
-
       // Handle lists
       else if (val is List) {
         _lsList(val, paths, child, writeValues, exclude, parent, key);
       }
-
       // Handle other values
       else if (writeValues) {
         paths.add([...parent, key, val.toString()]);
@@ -333,7 +308,6 @@ class DirectJson {
           exclude: exclude,
         );
       }
-
       // Handle list in list
       else if (val[i] is List) {
         _lsList(
@@ -346,7 +320,6 @@ class DirectJson {
           key,
         );
       }
-
       // Handle other values
       else {
         paths.add([...parent, key, '$i', '${val[i]}']);
