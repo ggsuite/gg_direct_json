@@ -21,6 +21,112 @@ void main() {
   });
 
   group('DirectJson()', () {
+    group('ls()', () {
+      test('returns all paths in a flat JSON', () {
+        final dj = DirectJson(
+          json: {'a': 1, 'b': 2},
+        );
+        final paths = dj.ls();
+        expect(paths, ['/', '/a', '/a/1', '/b', '/b/2']);
+      });
+
+      test('returns all paths in a nested JSON', () {
+        final dj = DirectJson(
+          json: {
+            'a': {
+              'b': 1,
+              'c': {'d': 2},
+            },
+            'e': 3,
+          },
+        );
+        final paths = dj.ls();
+        expect(paths, [
+          '/',
+          '/a',
+          '/a/b',
+          '/a/b/1',
+          '/a/c',
+          '/a/c/d',
+          '/a/c/d/2',
+          '/e',
+          '/e/3',
+        ]);
+      });
+
+      test('handles lists inside JSON', () {
+        final dj = DirectJson(
+          json: {
+            'a': [
+              {'b': 1},
+              {'c': 2},
+            ],
+          },
+        );
+        final paths = dj.ls();
+        expect(
+          paths,
+          ['/', '/a', '/a/0/b', '/a/0/b/1', '/a/1/c', '/a/1/c/2'],
+        );
+      });
+
+      test('returns paths including values when writeValues is true', () {
+        final dj = DirectJson(
+          json: {
+            'a': 1,
+            'b': {'c': 2},
+          },
+        );
+        final paths = dj.ls(writeValues: true);
+        expect(paths, ['/', '/a', '/a/1', '/b', '/b/c', '/b/c/2']);
+      });
+
+      test('does include values when writeValues is false', () {
+        final dj = DirectJson(
+          json: {
+            'a': 1,
+            'b': {'c': 2},
+          },
+        );
+
+        final paths = dj.ls(writeValues: false);
+        expect(paths, ['/', '/a', '/b', '/b/c']);
+      });
+
+      test('excludes keys matching the exclude pattern', () {
+        final dj = DirectJson(
+          json: {
+            'a': 1,
+            'b_exclude': 2,
+            'c': {'b_exclude': 3},
+          },
+        );
+
+        final paths = dj.ls(
+          writeValues: true,
+          exclude: RegExp('exclude'),
+        );
+
+        expect(paths, ['/', '/a', '/a/1', '/c']);
+      });
+
+      test('handles lists in lists', () {
+        final dj = DirectJson(
+          json: {
+            'a': [
+              {'b': 1},
+              ['c', 'd'],
+            ],
+          },
+        );
+        final paths = dj.ls();
+        expect(
+          paths,
+          ['/', '/a', '/a/0/b', '/a/0/b/1', '/a/0/c', '/a/1/d'],
+        );
+      });
+    });
+
     test('set, get', () {
       final df = DirectJson(
         json: {

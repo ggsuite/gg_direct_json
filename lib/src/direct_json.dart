@@ -19,6 +19,7 @@ class DirectJson {
   factory DirectJson.fromString({
     required String json,
     bool prettyPrint = false,
+    Pattern? exclude,
   }) =>
       DirectJson(
         prettyPrint: prettyPrint,
@@ -30,6 +31,24 @@ class DirectJson {
 
   /// The JSON document as a string.
   String get jsonString => _encoder(prettyPrint).convert(json);
+
+  // ######################
+  // ls
+  // ######################
+
+  // ...........................................................................
+  /// Lists all paths in a JSON document
+  List<String> ls({bool writeValues = true, Pattern? exclude}) {
+    final result = <List<String>>[
+      ['/'],
+    ];
+    _ls(json, result, [''], writeValues: writeValues, exclude: exclude);
+    return result
+        .map(
+          (e) => e.join('/'),
+        )
+        .toList();
+  }
 
   // ######################
   // Write
@@ -256,5 +275,82 @@ class DirectJson {
     Iterable<String> path,
   ) {
     _read<T>(json, path); // Will throw if existing value has a different type.
+  }
+
+  // ...........................................................................
+  void _ls(
+    Map<String, dynamic> json,
+    List<List<String>> paths,
+    List<String> parent, {
+    required bool writeValues,
+    required Pattern? exclude,
+  }) {
+    for (final key in json.keys) {
+      // Exclude keys that match the exclude pattern
+      if (exclude?.allMatches(key).isNotEmpty == true) {
+        continue;
+      }
+
+      final val = json[key];
+      final child = [...parent, key];
+      paths.add(child);
+
+      // Handle maps
+      if (val is Map<String, dynamic>) {
+        _ls(val, paths, child, writeValues: writeValues, exclude: exclude);
+      }
+
+      // Handle lists
+      else if (val is List) {
+        _lsList(val, paths, child, writeValues, exclude, parent, key);
+      }
+
+      // Handle other values
+      else if (writeValues) {
+        paths.add([...parent, key, val.toString()]);
+      }
+    }
+  }
+
+  // ...........................................................................
+  void _lsList(
+    List<dynamic> val,
+    List<List<String>> paths,
+    List<String> child,
+    bool writeValues,
+    Pattern? exclude,
+    List<String> parent,
+    String key,
+  ) {
+    for (var i = 0; i < val.length; i++) {
+      // Handle map in list
+      if (val[i] is Map<String, dynamic>) {
+        _ls(
+          val[i] as Map<String, dynamic>,
+          paths,
+          [...child, '$i'],
+          writeValues: writeValues,
+          exclude: exclude,
+        );
+      }
+
+      // Handle list in list
+      else if (val[i] is List) {
+        _lsList(
+          val[i] as List<dynamic>,
+          paths,
+          [...child, '$i'],
+          writeValues,
+          exclude,
+          parent,
+          key,
+        );
+      }
+
+      // Handle other values
+      else {
+        paths.add([...parent, key, '$i', '${val[i]}']);
+      }
+    }
   }
 }
