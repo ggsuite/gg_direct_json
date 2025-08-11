@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Add .gitattributes file
+
 ### Changed
 
 - Upgrade dart to version 3.8.0
