@@ -10,6 +10,7 @@
 
 - Upgrade dart to version 3.8.0
 - Provide gg via npm
+- Fix shell changes
 
 ## 2.0.1 - 2025-06-17
 
