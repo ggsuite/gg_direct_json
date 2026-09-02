@@ -9,4 +9,4 @@
 // coverage:ignore-file
 
 /// The version of the `gg_direct_json` package.
-const String ggDirectJsonVersion = '2.1.0';
+const String ggDirectJsonVersion = '2.2.0';
