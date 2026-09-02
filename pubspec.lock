@@ -205,18 +205,18 @@ packages:
     dependency: transitive
     description:
       name: gg_capture_print
-      sha256: ba6a19c2d7aad636cb306e556ceddb5646ed37380d18ebe9e894586e3e42c5cf
+      sha256: fd793824121435fe128619c99bcf4a6fac9398188dcc7dd3def6cfe02d2327f9
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.0"
+    version: "1.2.0"
   gg_console_colors:
     dependency: transitive
     description:
       name: gg_console_colors
-      sha256: "35d4607f068e726ddbdd3e1ca2db215aa6497bd01ef72eb626c620ce58cb1888"
+      sha256: "587848a714df37ff255f18e8530b0dc7a49097c62e6692b91c70361ad4df6af2"
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.0"
+    version: "2.5.0"
   gg_hash:
     dependency: transitive
     description:
