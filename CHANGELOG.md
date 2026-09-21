@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- &quot;Quiet
+
 ## 2.2.0 - 2026-09-02
 
 ### Changed
